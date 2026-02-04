@@ -2,11 +2,11 @@
 
 
 
-// basic feature 1 
+// basic feature 1 : Gui Ru 
 
-// basic feature 2 
+// basic feature 2 : Anjushree
 
-// basic feature 3 
+// basic feature 3 : Anjushree
 
 static List<Restaurant> restaurants = new List<Restaurant>();
 static Dictionary<string, Restaurant> restaurantById =
@@ -40,12 +40,12 @@ string[] parts = line.Split(',');
   Console.WriteLine($"{restaurants.Count} restaurants loaded!");
 
 
-// basic feature 4
+// basic feature 4 : Gui Ru
 
-// basic feature 5
+// basic feature 5 : Anjushree
 
-// basic feature 6
+// basic feature 6 : Gui Ru 
 
-// basic feature 7
+// basic feature 7 : Anjushree
 
-// basic feature 8 
+// basic feature 8 : Gui Ru 
