@@ -35,8 +35,6 @@ string ordersFilePath = "orders - Copy.csv";
 
 Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
 
-LoadRestaurants();
-LoadFoodItems();
 LoadCustomers("customers.csv");
 LoadOrders("orders - Copy.csv");
 
