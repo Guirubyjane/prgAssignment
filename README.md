@@ -7,13 +7,12 @@ namespace S10272786F_PRG2Assignment
     {
         private string menuId;
         private string menuName;
-        private List<FoodItem> foodItems;
+        public List<FoodItem> foodItems { get; set; } = new List<FoodItem>();
 
         public Menu(string menuId, string menuName)
         {
             this.menuId = menuId;
             this.menuName = menuName;
-            foodItems = new List<FoodItem>();
         }
 
         public void AddFoodItem(FoodItem foodItem)
