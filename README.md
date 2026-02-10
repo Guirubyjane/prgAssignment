@@ -280,7 +280,7 @@ void LoadOrders(string path)
                 // Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
                 Order o = new Order(orderId, orderDT, total, status, deliveryDT, address, payMethod, paid);
 
-                // ✅ Feature 2 required links:
+                //  Feature 2 required links:
                 customerByEmail[custEmail].AddOrder(o);
                 restaurantById[restId].Orders.Enqueue(o);
 
@@ -297,26 +297,44 @@ void LoadOrders(string path)
 
 
         // Basic Feature 3: Anjushree 
+
         void ListAllRestaurantsAndMenuItems()
+{
+    Console.WriteLine("\nAll Restaurants and Menu Items");
+    Console.WriteLine("==============================");
+
+    foreach (Restaurant r in RestaurantList)
+    {
+        Console.WriteLine($"Restaurant: {r.RestaurantName} ({r.RestaurantId})");
+
+        if (r.Menus.Count == 0)
         {
-            Console.WriteLine("\nAll Restaurants and Menu Items");
-            Console.WriteLine("==============================");
+            Console.WriteLine("  (No menu)");
+            Console.WriteLine();
+            continue;
+        }
 
-            foreach (Restaurant r in restaurants)
+        foreach (Menu m in r.Menus)
+        {
+            
+            Console.WriteLine($"  {m.ToString()}");
+
+            if (m.FoodItems.Count == 0)
             {
-                Console.WriteLine($"Restaurant: {r.RestaurantName} ({r.RestaurantId})");
-
-                foreach (Menu m in r.Menus)
+                Console.WriteLine("    (No food items)");
+            }
+            else
+            {
+                foreach (FoodItem fi in m.FoodItems)
                 {
-                    foreach (FoodItem fi in m.FoodItems)
-                    {
-                        Console.WriteLine($" - {fi}");
-                    }
+                    Console.WriteLine($"    - {fi}");
                 }
-
-                Console.WriteLine();
             }
         }
+
+        Console.WriteLine();
+    }
+}
 
 
 
