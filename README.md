@@ -72,49 +72,42 @@ void DisplayMainMenu()
 
 
 // Basic Feature 1: Gui Ru 
+void ListAllRestaurantsAndMenuItems()
+{
+    LoadRestaurants();
+    LoadFoodItems();
+}
 
 void LoadRestaurants()
 {
     try
     {
-        if (!File.Exists("restaurants.csv"))
+        string restaurantPath = @"C:\NP 2025 SEM 2\PRG2 Programming 2\S10274330_PRG2Assignment\S10274330_PRG2Assignment\restaurants.csv";
+        if (!File.Exists(restaurantPath))
         {
             Console.WriteLine("restaurants.csv file not found!");
             return;
         }
 
-        
-        restaurants.Clear();
-        restaurantById.Clear();
-
-        string[] lines = File.ReadAllLines("restaurants.csv");
-        int count = 0;
-
-        // Skip header line
-        for (int i = 1; i < lines.Length; i++)
+        using (StreamReader sr = new StreamReader(restaurantPath))
         {
-            string[] parts = lines[i].Split(',');
-            if (parts.Length >= 3)
+            string heading = sr.ReadLine();
+            string line;
+            int count = 0;
+            while ((line = sr.ReadLine()) != null)
             {
-                string restaurantID = parts[0].Trim();
-                string name = parts[1].Trim();
-                string email = parts[2].Trim();
+                string[] data = line.Split(',');
+                string restaurantID = data[0].Trim();
+                string name = data[1].Trim();
+                string email = data[2].Trim();
 
-                Restaurant restaurant = new Restaurant(restaurantID, name, email);
-
-                
-                restaurant.AddMenu(new Menu("M001", "Main Menu"));
-
-                restaurants.Add(restaurant);
-
-                
-                restaurantById[restaurantID] = restaurant;
+                Restaurant r = new Restaurant(restaurantID, name, email);
+                RestaurantList.Add(r);
 
                 count++;
             }
+            Console.WriteLine($"{count} restaurants loaded!");
         }
-
-        Console.WriteLine($"{count} restaurants loaded!");
     }
     catch (Exception ex)
     {
@@ -122,56 +115,74 @@ void LoadRestaurants()
     }
 }
 
-
 void LoadFoodItems()
-{
-    try
     {
-        if (!File.Exists("fooditems - Copy.csv"))
+        try
         {
-            Console.WriteLine("fooditems - Copy.csv file not found!");
-            return;
-        }
+        string FoodItemPath = @"C:\NP 2025 SEM 2\PRG2 Programming 2\S10274330_PRG2Assignment\S10274330_PRG2Assignment\fooditems.csv";
 
-        // read the correct file 
-        string[] lines = File.ReadAllLines("fooditems - Copy.csv");
-        int count = 0;
-
-        // Skip header line
-        for (int i = 1; i < lines.Length; i++)
-        {
-            string[] parts = lines[i].Split(',');
-            if (parts.Length >= 4)
+            if (!File.Exists(FoodItemPath))
             {
-                string restaurantID = parts[0].Trim();
-                string itemName = parts[1].Trim();
-                string description = parts[2].Trim();
-                double price = double.Parse(parts[3].Trim());
+                Console.WriteLine("fooditems.csv file not found!");
+                return;
+            }
 
-                // use dictionary built in LoadRestaurants()
-                if (restaurantById.ContainsKey(restaurantID))
+            using (StreamReader sr1 = new StreamReader(FoodItemPath))
+            {
+                string heading = sr1.ReadLine();
+                string line;
+                int rows = 0;
+
+                while ((line = sr1.ReadLine()) != null)
                 {
-                    Restaurant restaurant = restaurantById[restaurantID];
+                    string[] data = line.Split(',');
+                    string restaurantID = data[0].Trim();
+                    string itemName = data[1].Trim();
+                    string desc = data[2].Trim();
+                    double price = Convert.ToDouble(data[3].Trim());
 
-                    // your FoodItem constructor needs 4 params
-                    FoodItem foodItem = new FoodItem(itemName, description, price, "");
+                    Restaurant restaurant = FindRestaurant(restaurantID);
 
-                    // add to the restaurant's first menu (Feature 5 uses this)
-                    restaurant.Menus[0].AddFoodItem(foodItem);
+                    if (restaurant != null)
+                    {
+                        // Create food item with empty customise field
+                        FoodItem foodItem = new FoodItem(itemName, desc, price, "");
 
-                    count++;
+                        // Check if restaurant has a menu, if not create one
+                        if (restaurant.Menus.Count == 0)
+                        {
+                            restaurant.AddMenu(new Menu("M001", "Main Menu"));  //each menu for each restaurant. same name for diff restaurant
+                        }
+
+                        // Add food item to the first menu
+                        restaurant.Menus[0].AddFoodItem(foodItem);
+                        rows++;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"DEBUG: Could not find restaurant with ID: [{restaurantID}]");
+                    }
                 }
+                Console.WriteLine($"{rows} Food Items loaded!");
             }
         }
-
-        Console.WriteLine($"{count} food items loaded!");
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading food items: {ex.Message}");
+        }
     }
-    catch (Exception ex)
+
+Restaurant FindRestaurant(string id)
+{
+    foreach (Restaurant r in RestaurantList)
     {
-        Console.WriteLine($"Error loading food items: {ex.Message}");
+        if (r.RestaurantId == id)
+        {
+            return r; // Success: Found the match!
+        }
     }
+    return null; // Failure: ID doesn't exist in our list
 }
-
 
 // Basic Feature 2: Anjushree
 void LoadCustomers(string path)
