@@ -1,6 +1,6 @@
+using System.Net.Http.Headers;
 
-
-namespace S10272786F_PRG2Assignment
+namespace S10274330_PRG2Assignment
 {
     internal class Restaurant
     {
@@ -18,32 +18,28 @@ namespace S10272786F_PRG2Assignment
             set { restaurantEmail = value; }
         }
 
-        private List<Menu> menus;
-        private Queue<Order> orders;
-        private List<SpecialOffer> specialOffers;
+        public List<Menu> Menus { get; set; } = new List<Menu>();
+        public Queue<Order> Orders { get; set; } = new Queue<Order>();
+        public List<SpecialOffer> SpecialOffers { get; set; } = new List<SpecialOffer>();
 
         public Restaurant(string restaurantId, string restaurantName, string restaurantEmail)
         {
-           restaurantId = RestaurantId;
-           restaurantName = RestaurantName;
-           restaurantEmail = RestaurantEmail;
-
-            menus = new List<Menu>();
-            orders = new Queue<Order>();
-            specialOffers = new List<SpecialOffer>();
+            RestaurantId = restaurantId;
+            RestaurantName = restaurantName;
+            RestaurantEmail = restaurantEmail;
         }
 
         public void AddMenu(Menu menu)
         {
-            menus.Add(menu);
+            Menus.Add(menu);
         }
         public bool RemoveMenu(Menu menu)
         {
-            return menus.Remove(menu);
+            return Menus.Remove(menu);
         }
         public void DisplayMenu()
         {
-            foreach (Menu menu in menus)
+            foreach (Menu menu in Menus)
             {
                 Console.WriteLine(menu);
                 menu.DisplayFoodItems();
@@ -51,21 +47,21 @@ namespace S10272786F_PRG2Assignment
         }
         public void DisplayOrders()
         {
-            foreach (Order order in orders)
+            foreach (Order order in Orders)
             {
                 Console.WriteLine(order);
             }
         }
         public void DisplaySpecialOffers()
         {
-            foreach (SpecialOffer offer in specialOffers)
+            foreach (SpecialOffer offer in SpecialOffers)
             {
                 Console.WriteLine(offer);
             }
         }
         public override string ToString()
         {
-            return $"{restaurantName} ({restaurantId}) - {restaurantEmail}";
+            return $"{RestaurantName} ({RestaurantId}) - {RestaurantEmail}";
         }
     }
 }
