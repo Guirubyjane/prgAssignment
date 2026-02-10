@@ -20,7 +20,7 @@ using System.Linq;
 
 
 
-List<Restaurant> restaurants = new();
+List<Restaurant> RestaurantList = new List<Restaurant>();
 Dictionary<string, Restaurant> restaurantById = new();
 
 List<Customer> customers = new();
