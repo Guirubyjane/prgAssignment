@@ -39,22 +39,42 @@ LoadMenuItems();
 LoadCustomers("customers.csv");
 LoadOrders("orders - Copy.csv");
 
+// Main menu loop
 while (true)
 {
     DisplayMainMenu();
     Console.Write("Enter your choice: ");
     int option = Convert.ToInt32(Console.ReadLine());
 
-
-    if (option == 1) ListAllRestaurantsAndMenuItems();
-    else if (option == 2) ListAllOrders();
-    else if (option == 3) CreateNewOrder();
-    else if (option == 4) ProcessOrder();
-    else if (option == 5) ModifyExistingOrder();
-    else if (option == 6) DeleteOrder();
-    else if (option == 0) break;
+    if (option == 1)
+    {
+        ListAllRestaurantsAndMenuItems();
+    }
+    else if (option == 2)
+    {
+        ListAllOrders();
+    }
+    else if (option == 3)
+    {
+        CreateNewOrder();
+    }
+    else if (option == 4)
+    {
+        ProcessOrder();
+    }
+    else if (option == 5)
+    {
+        ModifyOrder();
+    }
+    else if (option == 6)
+    {
+        DeleteOrder();
+    }
+    else if (option == 0)
+    {
+        break;
+    }
 }
-// Main menu loop
 
 void DisplayMainMenu()
 {
@@ -67,7 +87,6 @@ void DisplayMainMenu()
         "\n6. Delete an existing order" +
         "\n0. Exit");
 }
-
 
 
 // Basic Feature 1: Gui Ru 
