@@ -225,6 +225,7 @@ void LoadCustomers(string path)
 
 void LoadOrders(string path)
 {
+    // 1. Read all lines from the CSV file
     string[] lines = File.ReadAllLines(path);
     if (lines.Length <= 1)
     {
@@ -232,12 +233,13 @@ void LoadOrders(string path)
         return;
     }
 
-    // header -> index map
+    // 2. Map headers to their column index (handles different CSV formats)
     string[] headers = lines[0].Split(',');
     Dictionary<string, int> idx = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
     for (int i = 0; i < headers.Length; i++)
         idx[headers[i].Trim()] = i;
 
+    // Helper function to safely get data from a column by name
     string Get(string[] parts, params string[] names)
     {
         foreach (string n in names)
@@ -253,26 +255,29 @@ void LoadOrders(string path)
 
     int count = 0;
 
+    // 3. Loop through data rows (starting from line 1 to skip header)
     for (int i = 1; i < lines.Length; i++)
     {
         if (string.IsNullOrWhiteSpace(lines[i])) continue;
         string[] p = lines[i].Split(',');
 
+        // Extract raw strings from CSV
         string orderIdStr = Get(p, "OrderID", "Order Id", "Order ID");
         string custEmail = Get(p, "CustomerEmail", "Customer Email", "Email");
         string restId = Get(p, "RestaurantID", "Restaurant Id", "Restaurant ID");
         string status = Get(p, "Status");
         string totalStr = Get(p, "TotalAmount", "Total Amount", "Amount");
-
-        string orderDTStr = Get(p, "OrderDateTime", "Order Date/Time", "Order Date Time");
-        string delDTStr = Get(p, "DeliveryDateTime", "Delivery Date/Time", "Delivery Date Time");
+        string orderDTStr = Get(p, "OrderDateTime", "Order Date/Time");
+        string delDTStr = Get(p, "DeliveryDateTime", "Delivery Date/Time");
         string address = Get(p, "DeliveryAddress", "Address");
         string payMethod = Get(p, "PaymentMethod", "Payment Method");
         string paidStr = Get(p, "Paid", "OrderPaid");
 
+        // Validate and Parse data
         if (!int.TryParse(orderIdStr, out int orderId)) continue;
         if (!double.TryParse(totalStr, out double total)) total = 0;
 
+        // Ensure the Customer and Restaurant exist in our system before linking
         if (!customerByEmail.ContainsKey(custEmail)) continue;
         if (!restaurantById.ContainsKey(restId)) continue;
 
@@ -281,32 +286,26 @@ void LoadOrders(string path)
         if (!string.IsNullOrEmpty(orderDTStr)) DateTime.TryParse(orderDTStr, out orderDT);
         if (!string.IsNullOrEmpty(delDTStr)) DateTime.TryParse(delDTStr, out deliveryDT);
 
-        bool paid = false;
-        if (!string.IsNullOrEmpty(paidStr))
-        {
-            if (paidStr.Equals("Y", StringComparison.OrdinalIgnoreCase)) paid = true;
-            else if (paidStr.Equals("N", StringComparison.OrdinalIgnoreCase)) paid = false;
-            else bool.TryParse(paidStr, out paid);
-        }
+        bool paid = paidStr.Equals("Y", StringComparison.OrdinalIgnoreCase);
 
-        // Order constructor:
-        // Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
+        // 4. Create the Order object using the constructor
         Order o = new Order(orderId, orderDT, total, status, deliveryDT, address, payMethod, paid);
 
-        // Feature 2 required links:
-        customerByEmail[custEmail].AddOrder(o);
-        restaurantById[restId].Orders.Enqueue(o);
+        // 5. LINK THE OBJECTS (Fixes "Unknown Customer/Restaurant" error)
+        o.Customer = customerByEmail[custEmail];
+        o.Restaurant = restaurantById[restId];
+
+        // 6. Establish the bidirectional relationships (Figure 8 requirements)
+        customerByEmail[custEmail].AddOrder(o);     // Link to Customer's List
+        restaurantById[restId].Orders.Enqueue(o);   // Link to Restaurant's Queue (FIFO)
 
         count++;
-
         orderRestaurantMap[orderId] = restId;
         if (orderId >= nextOrderId) nextOrderId = orderId + 1;
-
     }
 
     Console.WriteLine($"{count} orders loaded!");
 }
-
 
 
 // Basic Feature 3: Anjushree 
@@ -673,7 +672,7 @@ void ProcessOrder()
         // Display order number
         Console.WriteLine($"\nOrder {order.OrderId}:");
         // Display Customer Name
-        Console.WriteLine($"Customer: {order.Customer.CustomerName}");
+        Console.WriteLine($"Customer: {order.Customer?.CustomerName??"Unknown Customer"}");
         // Display ordered food item
         Console.WriteLine("Ordered Items:");
         int itemNum = 1;
