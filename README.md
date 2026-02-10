@@ -14,30 +14,29 @@ using S10272786F_PRG2Assignment;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 
-
-
 List<Restaurant> RestaurantList = new List<Restaurant>();
-Dictionary<string, Restaurant> restaurantById = new();
+Stack<Order> RefundStack = new Stack<Order>();
 
 List<Customer> customers = new();
+Dictionary<string, Restaurant> restaurantById = new();
 Dictionary<string, Customer> customerByEmail = new();
-
 Dictionary<int, string> orderRestaurantMap = new();
-Stack<Order> refundStack = new();
 
 int nextOrderId = 1;
-string ordersFilePath = "orders - Copy.csv";
-
+//customer path? 
+string ordersFilePath = @"C:\NP 2025 SEM 2\PRG2 Programming 2\S10274330_PRG2Assignment\S10274330_PRG2Assignment\orders.csv";
+string path = @"C:\NP 2025 SEM 2\PRG2 Programming 2\S10274330_PRG2Assignment\S10274330_PRG2Assignment\customers.csv";
+LoadRestaurants();
+LoadFoodItems();
+LoadCustomers(path);
+LoadOrders(ordersFilePath);
 
 Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
-LoadRestaurants();
-LoadMenuItems();
-LoadCustomers("customers.csv");
-LoadOrders("orders - Copy.csv");
 
 // Main menu loop
 while (true)
@@ -64,7 +63,7 @@ while (true)
     }
     else if (option == 5)
     {
-        ModifyOrder();
+        ModifyExistingOrder();
     }
     else if (option == 6)
     {
@@ -89,12 +88,8 @@ void DisplayMainMenu()
 }
 
 
-// Basic Feature 1: Gui Ru 
-void LoadAllRestaurantsAndMenuItems()
-{
-    LoadRestaurants();
-    LoadFoodItems();
-}
+
+// basic feature 1 : Gui Ru 
 
 void LoadRestaurants()
 {
@@ -121,7 +116,7 @@ void LoadRestaurants()
 
                 Restaurant r = new Restaurant(restaurantID, name, email);
                 RestaurantList.Add(r);
-
+                restaurantById[restaurantID] = r; //Add this line
                 count++;
             }
             Console.WriteLine($"{count} restaurants loaded!");
@@ -189,7 +184,6 @@ void LoadFoodItems()
             Console.WriteLine($"Error loading food items: {ex.Message}");
         }
     }
-
 Restaurant FindRestaurant(string id)
 {
     foreach (Restaurant r in RestaurantList)
@@ -204,120 +198,119 @@ Restaurant FindRestaurant(string id)
 
 // Basic Feature 2 : Anjushree
 void LoadCustomers(string path)
-        {
-            customers.Clear();
-            customerByEmail.Clear();
+{
+    customers.Clear();
+    customerByEmail.Clear();
 
-            foreach (string line in File.ReadAllLines(path))
-            {
-                if (string.IsNullOrWhiteSpace(line)) continue;
-                if (line.StartsWith("Name")) continue;
+    foreach (string line in File.ReadAllLines(path))
+    {
+        if (string.IsNullOrWhiteSpace(line)) continue;
+        if (line.StartsWith("Name")) continue;
 
-                string[] p = line.Split(',');
-                if (p.Length < 2) continue;
+        string[] p = line.Split(',');
+        if (p.Length < 2) continue;
 
-                string name = p[0].Trim();
-                string email = p[1].Trim();
+        string name = p[0].Trim();
+        string email = p[1].Trim();
 
-                // Customer constructor: Customer(string ea, string cn)
-                Customer c = new Customer(email, name);
+        // Customer constructor: Customer(string ea, string cn)
+        Customer c = new Customer(email, name);
 
-                customers.Add(c);
-                customerByEmail[email] = c;
-            }
+        customers.Add(c);
+        customerByEmail[email] = c;
+    }
 
-            Console.WriteLine($"{customers.Count} customers loaded!");
-        }
+    Console.WriteLine($"{customers.Count} customers loaded!");
+}
 
 void LoadOrders(string path)
+{
+    string[] lines = File.ReadAllLines(path);
+    if (lines.Length <= 1)
+    {
+        Console.WriteLine("0 orders loaded!");
+        return;
+    }
+
+    // header -> index map
+    string[] headers = lines[0].Split(',');
+    Dictionary<string, int> idx = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+    for (int i = 0; i < headers.Length; i++)
+        idx[headers[i].Trim()] = i;
+
+    string Get(string[] parts, params string[] names)
+    {
+        foreach (string n in names)
         {
-            string[] lines = File.ReadAllLines(path);
-            if (lines.Length <= 1)
+            if (idx.ContainsKey(n))
             {
-                Console.WriteLine("0 orders loaded!");
-                return;
+                int k = idx[n];
+                if (k >= 0 && k < parts.Length) return parts[k].Trim();
             }
+        }
+        return "";
+    }
 
-            // header -> index map
-            string[] headers = lines[0].Split(',');
-            Dictionary<string, int> idx = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 0; i < headers.Length; i++)
-                idx[headers[i].Trim()] = i;
+    int count = 0;
 
-            string Get(string[] parts, params string[] names)
-            {
-                foreach (string n in names)
-                {
-                    if (idx.ContainsKey(n))
-                    {
-                        int k = idx[n];
-                        if (k >= 0 && k < parts.Length) return parts[k].Trim();
-                    }
-                }
-                return "";
-            }
+    for (int i = 1; i < lines.Length; i++)
+    {
+        if (string.IsNullOrWhiteSpace(lines[i])) continue;
+        string[] p = lines[i].Split(',');
 
-            int count = 0;
+        string orderIdStr = Get(p, "OrderID", "Order Id", "Order ID");
+        string custEmail = Get(p, "CustomerEmail", "Customer Email", "Email");
+        string restId = Get(p, "RestaurantID", "Restaurant Id", "Restaurant ID");
+        string status = Get(p, "Status");
+        string totalStr = Get(p, "TotalAmount", "Total Amount", "Amount");
 
-            for (int i = 1; i < lines.Length; i++)
-            {
-                if (string.IsNullOrWhiteSpace(lines[i])) continue;
-                string[] p = lines[i].Split(',');
+        string orderDTStr = Get(p, "OrderDateTime", "Order Date/Time", "Order Date Time");
+        string delDTStr = Get(p, "DeliveryDateTime", "Delivery Date/Time", "Delivery Date Time");
+        string address = Get(p, "DeliveryAddress", "Address");
+        string payMethod = Get(p, "PaymentMethod", "Payment Method");
+        string paidStr = Get(p, "Paid", "OrderPaid");
 
-                string orderIdStr = Get(p, "OrderID", "Order Id", "Order ID");
-                string custEmail = Get(p, "CustomerEmail", "Customer Email", "Email");
-                string restId = Get(p, "RestaurantID", "Restaurant Id", "Restaurant ID");
-                string status = Get(p, "Status");
-                string totalStr = Get(p, "TotalAmount", "Total Amount", "Amount");
+        if (!int.TryParse(orderIdStr, out int orderId)) continue;
+        if (!double.TryParse(totalStr, out double total)) total = 0;
 
-                string orderDTStr = Get(p, "OrderDateTime", "Order Date/Time", "Order Date Time");
-                string delDTStr = Get(p, "DeliveryDateTime", "Delivery Date/Time", "Delivery Date Time");
-                string address = Get(p, "DeliveryAddress", "Address");
-                string payMethod = Get(p, "PaymentMethod", "Payment Method");
-                string paidStr = Get(p, "Paid", "OrderPaid");
+        if (!customerByEmail.ContainsKey(custEmail)) continue;
+        if (!restaurantById.ContainsKey(restId)) continue;
 
-                if (!int.TryParse(orderIdStr, out int orderId)) continue;
-                if (!double.TryParse(totalStr, out double total)) total = 0;
+        DateTime orderDT = DateTime.Now;
+        DateTime deliveryDT = DateTime.Now;
+        if (!string.IsNullOrEmpty(orderDTStr)) DateTime.TryParse(orderDTStr, out orderDT);
+        if (!string.IsNullOrEmpty(delDTStr)) DateTime.TryParse(delDTStr, out deliveryDT);
 
-                if (!customerByEmail.ContainsKey(custEmail)) continue;
-                if (!restaurantById.ContainsKey(restId)) continue;
-
-                DateTime orderDT = DateTime.Now;
-                DateTime deliveryDT = DateTime.Now;
-                if (!string.IsNullOrEmpty(orderDTStr)) DateTime.TryParse(orderDTStr, out orderDT);
-                if (!string.IsNullOrEmpty(delDTStr)) DateTime.TryParse(delDTStr, out deliveryDT);
-
-                bool paid = false;
-                if (!string.IsNullOrEmpty(paidStr))
-                {
-                    if (paidStr.Equals("Y", StringComparison.OrdinalIgnoreCase)) paid = true;
-                    else if (paidStr.Equals("N", StringComparison.OrdinalIgnoreCase)) paid = false;
-                    else bool.TryParse(paidStr, out paid);
-                }
-
-                // Order constructor:
-                // Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
-                Order o = new Order(orderId, orderDT, total, status, deliveryDT, address, payMethod, paid);
-
-                //  Feature 2 required links:
-                customerByEmail[custEmail].AddOrder(o);
-                restaurantById[restId].Orders.Enqueue(o);
-
-                count++;
-
-                orderRestaurantMap[orderId] = restId;
-                if (orderId >= nextOrderId) nextOrderId = orderId + 1;
-
-            }
-
-            Console.WriteLine($"{count} orders loaded!");
+        bool paid = false;
+        if (!string.IsNullOrEmpty(paidStr))
+        {
+            if (paidStr.Equals("Y", StringComparison.OrdinalIgnoreCase)) paid = true;
+            else if (paidStr.Equals("N", StringComparison.OrdinalIgnoreCase)) paid = false;
+            else bool.TryParse(paidStr, out paid);
         }
 
+        // Order constructor:
+        // Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
+        Order o = new Order(orderId, orderDT, total, status, deliveryDT, address, payMethod, paid);
+
+        // Feature 2 required links:
+        customerByEmail[custEmail].AddOrder(o);
+        restaurantById[restId].Orders.Enqueue(o);
+
+        count++;
+
+        orderRestaurantMap[orderId] = restId;
+        if (orderId >= nextOrderId) nextOrderId = orderId + 1;
+
+    }
+
+    Console.WriteLine($"{count} orders loaded!");
+}
 
 
-        // Basic Feature 3: Anjushree 
 
-        void ListAllRestaurantsAndMenuItems()
+// Basic Feature 3: Anjushree 
+void ListAllRestaurantsAndMenuItems()
 {
     Console.WriteLine("\nAll Restaurants and Menu Items");
     Console.WriteLine("==============================");
@@ -335,7 +328,7 @@ void LoadOrders(string path)
 
         foreach (Menu m in r.Menus)
         {
-            
+
             Console.WriteLine($"  {m.ToString()}");
 
             if (m.FoodItems.Count == 0)
@@ -350,22 +343,18 @@ void LoadOrders(string path)
                 }
             }
         }
-
-        Console.WriteLine();
     }
 }
 
-
-
-        // Basic Feature 4: Gui Ru 
-   void ListAllOrders()
+ // basic feature 4 : Gui Ru
+void ListAllOrders()
 {
     Console.WriteLine("\nAll Orders");
     Console.WriteLine("==========");
     Console.WriteLine($"{"Order ID",-9}{"Customer",-15}{"Restaurant",-15}{"Delivery Date/Time",-20}{"Amount",-8}{"Status",-12}");
     Console.WriteLine(new string('-', 90));
 
-    foreach (Customer customer in CustomerList)
+    foreach (Customer customer in customers)
     {
         foreach (Order order in customer.OrderList)
         {
@@ -373,8 +362,8 @@ void LoadOrders(string path)
         }
     }
 }
-        
-        // Basic Feature 5: Anjushree 
+
+// basic feature 5 : Anjushree
 void CreateNewOrder()
 {
     Console.WriteLine("\nCreate New Order");
@@ -653,11 +642,8 @@ List<OrderedFoodItem> SelectOrderedFoodItems(Menu menu)
     return selected;
 }
 
-        
-        
-        // Basic Feature 6: Gui Ru 
-
-        void ProcessOrder()
+// basic feature 6 : Gui Ru
+void ProcessOrder()
 {
     Console.WriteLine("\nProcess Order");
     Console.WriteLine("=============");
@@ -748,8 +734,7 @@ List<OrderedFoodItem> SelectOrderedFoodItems(Menu menu)
     foreach (var o in tempQueue) { restaurant.Orders.Enqueue(o); }
 }
 
-       // Basic Feature 7: Anjushree
-
+// basic feature 7 : Anjushree
 void ModifyExistingOrder()
 {
     Console.WriteLine("\nModify Existing Order");
@@ -939,16 +924,8 @@ void UpdateOrderRowInCsv(string path, Order o, string custEmail, string restId)
 
     Console.WriteLine("Order ID not found in CSV. No update made.");
 }
-          
 
-           
-
-            
-
-        
-
-        // Basic Feature 8: Gui Ru 
-
+// basic feature 8 : Gui Ru 
 void DeleteOrder()
 {
     Console.WriteLine("\nDelete Order");
@@ -992,7 +969,7 @@ void DeleteOrder()
     Console.WriteLine();
 
 
-    Order orderToDelete = FindOrder(orderID);
+    Order orderToDelete = FindOrderID(orderID);
     if (orderToDelete == null)
     {
         Console.WriteLine("Order not found!");
@@ -1044,7 +1021,7 @@ Customer FindCustomer(string email)
     }
     return null;
 }
-Order FindOrder(int id)
+Order FindOrderID(int id)
 {
     // You need to search the specific customer's orders
     // You can pass the customer as a parameter or find him globally
@@ -1091,7 +1068,7 @@ void SaveQueueAndStack()
         Console.WriteLine($"Error saving data: {ex.Message}");
     }
 }
- 
+
 
 
 
