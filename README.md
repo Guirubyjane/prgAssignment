@@ -4,76 +4,62 @@ List<Restaurant> RestaurantList = new List<Restaurant>();
 List<Customer> CustomerList = new List<Customer>();
 Stack<Order> RefundStack = new Stack<Order>();
 
+Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
 
-static void Main(string[] args)
+
+// Load all data files
+LoadRestaurants();
+LoadFoodItems();
+LoadCustomers();
+LoadOrders();
+
+// Main menu loop
+while (true)
 {
-    Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
+    DisplayMainMenu();
+    Console.WriteLine("Enter your choice: ");
+    int option = Convert.ToInt32(Console.ReadLine());
 
-    // Load all data files
-    LoadRestaurants();
-    LoadFoodItems();
-    LoadCustomers();
-    LoadOrders();
-
-    // Main menu loop
-    bool exit = false;
-    while (!exit)
+    if (option == 1)
     {
-        DisplayMainMenu();
-        string choice = Console.ReadLine();
-
-        switch (choice)
-        {
-            case "1":
-                ListAllRestaurantsAndMenuItems();
-                break;
-            case "2":
-                ListAllOrders();
-                break;
-            case "3":
-                CreateNewOrder();
-                break;
-            case "4":
-                ProcessOrder();
-                break;
-            case "5":
-                ModifyOrder();
-                break;
-            case "6":
-                DeleteOrder();
-                break;
-            case "0":
-                exit = true;
-                SaveQueueAndStack();
-                Console.WriteLine("Thank you for using Gruberoo Food Delivery System!");
-                break;
-            default:
-                Console.WriteLine("Invalid choice. Please try again.");
-                break;
-        }
-
-        if (!exit)
-        {
-            Console.WriteLine("\nPress any key to continue...");
-            Console.ReadKey();
-            Console.Clear();
-        }
+        ListAllRestaurantsAndMenuItems();
+    }
+    else if (option == 2)
+    {
+        ListAllCustomerAndOrders();
+    }
+    else if (option == 3)
+    {
+        CreateNewOrder();
+    }
+    else if (option == 4)
+    {
+        ProcessOrder();
+    }
+    else if (option == 5)
+    {
+        ModifyOrder();
+    }
+    else if (option == 6)
+    {
+        DeleteOrder();
+    }
+    else if (option == 0)
+    {
+        break;
     }
 }
-
-static void DisplayMainMenu()
-{
-    Console.WriteLine("\n===== Gruberoo Food Delivery System =====");
-    Console.WriteLine("1. List all restaurants and menu items");
-    Console.WriteLine("2. List all orders");
-    Console.WriteLine("3. Create a new order");
-    Console.WriteLine("4. Process an order");
-    Console.WriteLine("5. Modify an existing order");
-    Console.WriteLine("6. Delete an existing order");
-    Console.WriteLine("0. Exit");
-    Console.Write("Enter your choice: ");
-}
-
+    void DisplayMainMenu()
+    {
+        Console.WriteLine("===== Gruberoo Food Delivery System =====" +
+            "\n1. List all restaurants and menu items" +
+            "\n2. List all orders" +
+            "\n3. Create a new order" +
+            "\n4. Process an order" +
+            "\n5. Modify an existing order" +
+            "\n6. Delete an existing order" +
+            "\n0. Exit");
+    }
 
 // basic feature 1 : Gui Ru 
 // ============================================
