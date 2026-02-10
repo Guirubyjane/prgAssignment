@@ -1,143 +1,145 @@
 # prgAssignment
-class Order
+using S10274330_PRG2Assignment;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.AccessControl;
+using System.Text;
+using System.Threading.Tasks;
+
+//==========================================================
+// Student Number : S10274330A
+// Student Name : Gui Ru
+// Partner Name : Anjushree
+//==========================================================
+
+namespace S10274330_PRG2Assignment
 {
-    private int orderId;
-    private DateTime orderDateTime;
-    private double orderTotal;
-    private string orderStatus;
-    private DateTime deliveryDateTime;
-    private string deliveryAddress;
-    private string orderPaymentMethod;
-    private bool orderPaid;
-
-    public int OrderId { get; set; }
-    public DateTime OrderDateTime { get; set; }
-    public double OrderTotal { get; set; }
-    public string OrderStatus { get; set; }
-    public DateTime DeliveryDateTime { get; set; }
-    public string DeliveryAddress { get; set; }
-    public string OrderPaymentMethod { get; set; }
-    public bool OrderPaid { get; set; }
-
-    public Order() { }
-    public Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
+    class Order
     {
-        OrderId = oi;
-        OrderDateTime = odt;
-        OrderTotal = ot;
-        OrderStatus = os;
-        DeliveryDateTime = ddt;
-        DeliveryAddress = da;
-        OrderPaymentMethod = opm;
-        OrderPaid = op;
-       
-    }
+        // attributes
+        private int orderId;
+        private DateTime orderDateTime;
+        private double orderTotal;
+        private string orderStatus;
+        private DateTime deliveryDateTime;
+        private string deliveryAddress;
+        private string orderPaymentMethod;
+        private bool orderPaid;
 
-    // method 
-    public void AddItem(FoodItem item, int quantity)
-    {
-        if (OrderedItems.ContainsKey(item))
-        {
-            OrderedItems[item] += quantity;
-        }
-        else
-        {
-            OrderedItems.Add(item, quantity);
-            FoodItems.Add(item);
-        }
-    }
+        // properties
+        public int OrderId { get; set; }
+        public DateTime OrderDateTime { get; set; }
+        public double OrderTotal { get; set; }
+        public string OrderStatus { get; set; }
+        public DateTime DeliveryDateTime { get; set; }
+        public string DeliveryAddress { get; set; }
+        public string OrderPaymentMethod { get; set; }
+        public bool OrderPaid { get; set; }
 
-    public void RemoveItem(FoodItem item)
-    {
-        if (OrderedItems.ContainsKey(item))
-        {
-            OrderedItems.Remove(item);
-            FoodItems.Remove(item);
-        }
-    }
+        // 1 order --> 1..* OrderedFoodItem
+        public List<OrderedFoodItem> OrderedFoodItem { get; set; } = new List<OrderedFoodItem>();
 
-    public void UpdateItem(FoodItem item, int newQuantity)
-    {
-        if (OrderedItems.ContainsKey(item))
-        {
-            OrderedItems[item] = newQuantity;
-        }
-    }
+        // 1..* order <--> 1 Customer
+        public Customer Customer { get; set; }
 
-    public double CalculateTotal()
-    {
-        double subtotal = 0;
-        foreach (var item in OrderedItems)
+        // 0..* Order <--> 1 Restaurant
+        public Restaurant Restaurant { get; set; }
+
+        //0..*  Order --> 1 SpecialOffer           
+        public SpecialOffer SpecialOffer { get; set; }
+
+        // constructors
+        public Order() { }
+        public Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
         {
-            subtotal += item.Key.Price * item.Value;
+            OrderId = oi;
+            OrderDateTime = odt;
+            OrderTotal = ot;
+            OrderStatus = os;
+            DeliveryDateTime = ddt;
+            DeliveryAddress = da;
+            OrderPaymentMethod = opm;
+            OrderPaid = op;
         }
 
-        // Add delivery fee
-        const double DELIVERY_FEE = 5.00;
-        TotalAmount = subtotal + DELIVERY_FEE;
-        return TotalAmount;
-    }
+        // method 
 
-    public void UpdateStatus(string newStatus)
-    {
-        Status = newStatus;
-    }
-
-    public void ModifyDeliveryDateTime(DateTime newDateTime)
-    {
-        DeliveryDateTime = newDateTime;
-    }
-
-    public void ModifyDeliveryAddress(string newAddress)
-    {
-        DeliveryAddress = newAddress;
-    }
-
-    public void SetSpecialRequest(string request)
-    {
-        SpecialRequest = request;
-    }
-
-    public override string ToString()
-    {
-        return $"Order {OrderID}: Customer: {Customer?.Name}, Restaurant: {Restaurant?.Name}, " +
-               $"Delivery: {DeliveryDateTime:dd/MM/yyyy HH:mm}, Amount: ${TotalAmount:F2}, Status: {Status}";
-    }
-
-    // Display detailed order information
-    public void DisplayOrderDetails()
-    {
-        Console.WriteLine($"Order ID: {OrderID}");
-        Console.WriteLine($"Customer: {Customer?.Name}");
-        Console.WriteLine("Ordered Items:");
-        int itemNum = 1;
-        foreach (var item in OrderedItems)
+        public double CalculateOrderTotal()
         {
-            Console.WriteLine($"{itemNum}. {item.Key.ItemName} - {item.Value}");
-            itemNum++;
-        }
-        Console.WriteLine($"Delivery date/time: {DeliveryDateTime:dd/MM/yyyy HH:mm}");
-        Console.WriteLine($"Delivery Address: {DeliveryAddress}");
-        if (!string.IsNullOrEmpty(SpecialRequest))
-        {
-            Console.WriteLine($"Special Request: {SpecialRequest}");
-        }
-        Console.WriteLine($"Total Amount: ${TotalAmount:F2}");
-        Console.WriteLine($"Order Status: {Status}");
-    }
+            double total = 0;
+            foreach (OrderedFoodItem ofi in OrderedFoodItem)
+            {
+                total += ofi.CalculateSubTotal();
+            }
 
-    // Convert order to CSV format for saving
-    public string ToCSV()
-    {
-        string itemsStr = "";
-        foreach (var item in OrderedItems)
-        {
-            itemsStr += $"{item.Key.ItemName}:{item.Value};";
-        }
-        itemsStr = itemsStr.TrimEnd(';');
+            total += 5;                     // delivery fee
 
-        return $"{OrderID},{Customer.Email},{Restaurant.RestaurantID}," +
-               $"{OrderDateTime:dd/MM/yyyy HH:mm},{DeliveryDateTime:dd/MM/yyyy HH:mm}," +
-               $"{DeliveryAddress},{itemsStr},{TotalAmount:F2},{Status},{PaymentMethod},{SpecialRequest}";
+            if (SpecialOffer != null)
+            {
+                total = SpecialOffer.ApplyDiscount(total);
+            }
+
+            return total;
+        }
+
+        public void AddOrderedFoodItem(OrderedFoodItem ofi)
+        {
+
+            if (ofi != null)
+            {
+                OrderedFoodItem.Add(ofi);
+                CalculateOrderTotal();          // Recalculate total
+            }
+        }
+
+        public bool RemoveOrderedFoodItem(OrderedFoodItem ofi)
+        {
+            if (ofi != null && OrderedFoodItem.Contains(ofi))
+            {
+                OrderedFoodItem.Remove(ofi);
+                CalculateOrderTotal(); // Recalculate total
+                return true;
+            }
+            return false;
+        }
+
+        public void DisplayOrderedFoodItem()
+        {
+            Console.WriteLine("\nOrdered Food Items:");
+            Console.WriteLine("===================");
+
+            if (OrderedFoodItem.Count == 0)
+            {
+                Console.WriteLine("No items in this order.");
+                return;
+            }
+
+            int itemNumber = 1;
+            foreach (OrderedFoodItem ofi in OrderedFoodItem)
+            {
+                double itemSubtotal = ofi.CalculateSubTotal();
+                Console.WriteLine($"{itemNumber}. {ofi.OrderedFoodItem.tostring()}");
+                itemNumber++;
+            }
+
+            Console.WriteLine($"\nDelivery Fee: $5.00");
+
+            if (SpecialOffer != null && SpecialOffer.DiscountAmount > 0)
+            {
+                Console.WriteLine($"Discount ({SpecialOffer.OfferCode}): -{SpecialOffer.DiscountAmount}%");
+            }
+
+            Console.WriteLine($"Order Total: ${OrderTotal:F2}");
+        }
+
+        public string ToString()
+        {
+            string customerName = Customer?.CustomerName ?? "Unknown Customer";
+            string restaurantName = Restaurant?.RestaurantName ?? "Unknown Restaurant";
+
+            return $"Order #{OrderId} | Customer: {customerName} | Restaurant: {restaurantName} | " +
+                   $"Delivery: {DeliveryDateTime:dd/MM/yyyy HH:mm} | Total: ${OrderTotal:F2} | Status: {OrderStatus}";
+        }
     }
 }
