@@ -77,7 +77,8 @@ namespace S10274330_PRG2Assignment
 
             if (SpecialOffer != null)
             {
-                total = SpecialOffer.ApplyDiscount(total);
+                double discountValue = total * (SpecialOffer.Discount / 100);
+                 total -= discountValue;
             }
 
             return total;
@@ -138,8 +139,16 @@ namespace S10274330_PRG2Assignment
             string customerName = Customer?.CustomerName ?? "Unknown Customer";
             string restaurantName = Restaurant?.RestaurantName ?? "Unknown Restaurant";
 
-            return $"Order #{OrderId} | Customer: {customerName} | Restaurant: {restaurantName} | " +
-                   $"Delivery: {DeliveryDateTime:dd/MM/yyyy HH:mm} | Total: ${OrderTotal:F2} | Status: {OrderStatus}";
+            //ID, Customer, Restaurant, Time, Amount, Status
+            return $"{OrderId,-9} " +
+                   $"{customerName,-15} " +
+                   $"{restaurantName,-15} " +
+                   $"{DeliveryDateTime,-20:dd/MM/yyyy HH:mm} " +
+                   $"${OrderTotal,-8:F2} " +
+                   $"{OrderStatus}";
         }
     }
+
 }
+
+
