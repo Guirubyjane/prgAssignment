@@ -7,7 +7,7 @@ namespace S10272786F_PRG2Assignment
     {
         private string menuId;
         private string menuName;
-        public List<FoodItem> foodItems { get; set; } = new List<FoodItem>();
+        public List<FoodItem> FoodItems { get; set; } = new List<FoodItem>();
 
         public Menu(string menuId, string menuName)
         {
