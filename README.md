@@ -34,7 +34,7 @@ string ordersFilePath = "orders - Copy.csv";
 
 
 Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
-
+LoadAllRestaurantsAndMenuItems();
 LoadCustomers("customers.csv");
 LoadOrders("orders - Copy.csv");
 
@@ -70,7 +70,7 @@ void DisplayMainMenu()
 
 
 // Basic Feature 1: Gui Ru 
-void ListAllRestaurantsAndMenuItems()
+void LoadAllRestaurantsAndMenuItems()
 {
     LoadRestaurants();
     LoadFoodItems();
