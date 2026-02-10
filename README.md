@@ -1,5 +1,78 @@
 # prgAssignment
 
+List<Restaurant> RestaurantList = new List<Restaurant>();
+List<Customer> CustomerList = new List<Customer>();
+Stack<Order> RefundStack = new Stack<Order>();
+
+
+static void Main(string[] args)
+{
+    Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
+
+    // Load all data files
+    LoadRestaurants();
+    LoadFoodItems();
+    LoadCustomers();
+    LoadOrders();
+
+    // Main menu loop
+    bool exit = false;
+    while (!exit)
+    {
+        DisplayMainMenu();
+        string choice = Console.ReadLine();
+
+        switch (choice)
+        {
+            case "1":
+                ListAllRestaurantsAndMenuItems();
+                break;
+            case "2":
+                ListAllOrders();
+                break;
+            case "3":
+                CreateNewOrder();
+                break;
+            case "4":
+                ProcessOrder();
+                break;
+            case "5":
+                ModifyOrder();
+                break;
+            case "6":
+                DeleteOrder();
+                break;
+            case "0":
+                exit = true;
+                SaveQueueAndStack();
+                Console.WriteLine("Thank you for using Gruberoo Food Delivery System!");
+                break;
+            default:
+                Console.WriteLine("Invalid choice. Please try again.");
+                break;
+        }
+
+        if (!exit)
+        {
+            Console.WriteLine("\nPress any key to continue...");
+            Console.ReadKey();
+            Console.Clear();
+        }
+    }
+}
+
+static void DisplayMainMenu()
+{
+    Console.WriteLine("\n===== Gruberoo Food Delivery System =====");
+    Console.WriteLine("1. List all restaurants and menu items");
+    Console.WriteLine("2. List all orders");
+    Console.WriteLine("3. Create a new order");
+    Console.WriteLine("4. Process an order");
+    Console.WriteLine("5. Modify an existing order");
+    Console.WriteLine("6. Delete an existing order");
+    Console.WriteLine("0. Exit");
+    Console.Write("Enter your choice: ");
+}
 
 
 // basic feature 1 : Gui Ru 
