@@ -65,6 +65,7 @@ while (true)
 // ============================================
 // BASIC FEATURE 1: Load Restaurants and Food Items
 // ============================================
+
 static void LoadRestaurants()
 {
     try
@@ -74,6 +75,10 @@ static void LoadRestaurants()
             Console.WriteLine("restaurants.csv file not found!");
             return;
         }
+
+        // ✅ minimal: avoid duplicates + ensure dictionary exists
+        restaurants.Clear();
+        restaurantById.Clear();
 
         string[] lines = File.ReadAllLines("restaurants.csv");
         int count = 0;
@@ -89,7 +94,15 @@ static void LoadRestaurants()
                 string email = parts[2].Trim();
 
                 Restaurant restaurant = new Restaurant(restaurantID, name, email);
+
+                // ✅ minimal: each restaurant has at least one menu (required + used by Feature 5)
+                restaurant.AddMenu(new Menu("M001", "Main Menu"));
+
                 restaurants.Add(restaurant);
+
+                // ✅ minimal: needed by Feature 2/7
+                restaurantById[restaurantID] = restaurant;
+
                 count++;
             }
         }
@@ -102,17 +115,19 @@ static void LoadRestaurants()
     }
 }
 
+
 static void LoadFoodItems()
 {
     try
     {
-        if (!File.Exists("fooditems.csv"))
+        if (!File.Exists("fooditems - Copy.csv"))
         {
-            Console.WriteLine("fooditems.csv file not found!");
+            Console.WriteLine("fooditems - Copy.csv file not found!");
             return;
         }
 
-        string[] lines = File.ReadAllLines("fooditems.csv");
+        
+        string[] lines = File.ReadAllLines("fooditems - Copy.csv");
         int count = 0;
 
         // Skip header line
@@ -126,12 +141,17 @@ static void LoadFoodItems()
                 string description = parts[2].Trim();
                 double price = double.Parse(parts[3].Trim());
 
-                // Find the restaurant
-                Restaurant restaurant = FindRestaurant(restaurantID);
-                if (restaurant != null)
+                //use dictionary built in LoadRestaurants()
+                if (restaurantById.ContainsKey(restaurantID))
                 {
-                    FoodItem foodItem = new FoodItem(itemName, description, price);
-                    restaurant.AddFoodItem(foodItem);
+                    Restaurant restaurant = restaurantById[restaurantID];
+
+                    //FoodItem constructor needs 4 params
+                    FoodItem foodItem = new FoodItem(itemName, description, price, "");
+
+                    //add to the restaurant's first menu 
+                    restaurant.Menus[0].AddFoodItem(foodItem);
+
                     count++;
                 }
             }
@@ -145,130 +165,6 @@ static void LoadFoodItems()
     }
 }
 
-static void LoadCustomers()
-{
-    try
-    {
-        if (!File.Exists("customers.csv"))
-        {
-            Console.WriteLine("customers.csv file not found!");
-            return;
-        }
-
-        string[] lines = File.ReadAllLines("customers.csv");
-        int count = 0;
-
-        // Skip header line
-        for (int i = 1; i < lines.Length; i++)
-        {
-            string[] parts = lines[i].Split(',');
-            if (parts.Length >= 2)
-            {
-                string name = parts[0].Trim();
-                string email = parts[1].Trim();
-
-                Customer customer = new Customer(name, email);
-                customers.Add(customer);
-                count++;
-            }
-        }
-
-        Console.WriteLine($"{count} customers loaded!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error loading customers: {ex.Message}");
-    }
-}
-
-static void LoadOrders()
-{
-    try
-    {
-        if (!File.Exists("orders.csv"))
-        {
-            Console.WriteLine("orders.csv file not found!");
-            return;
-        }
-
-        string[] lines = File.ReadAllLines("orders.csv");
-        int count = 0;
-
-        // Skip header line
-        for (int i = 1; i < lines.Length; i++)
-        {
-            string line = lines[i];
-            if (string.IsNullOrWhiteSpace(line)) continue;
-
-            string[] parts = line.Split(',');
-            if (parts.Length >= 9)
-            {
-                int orderID = int.Parse(parts[0].Trim());
-                string customerEmail = parts[1].Trim();
-                string restaurantID = parts[2].Trim();
-                DateTime orderDateTime = DateTime.ParseExact(parts[3].Trim(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-                DateTime deliveryDateTime = DateTime.ParseExact(parts[4].Trim(), "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture);
-                string deliveryAddress = parts[5].Trim();
-                string itemsStr = parts[6].Trim();
-                double totalAmount = double.Parse(parts[7].Trim());
-                string status = parts[8].Trim();
-                string paymentMethod = parts.Length > 9 ? parts[9].Trim() : "CC";
-                string specialRequest = parts.Length > 10 ? parts[10].Trim() : "";
-
-                // Find customer and restaurant
-                Customer customer = FindCustomer(customerEmail);
-                Restaurant restaurant = FindRestaurant(restaurantID);
-
-                if (customer != null && restaurant != null)
-                {
-                    Order order = new Order(orderID, orderDateTime, deliveryDateTime,
-                                           deliveryAddress, status, totalAmount,
-                                           paymentMethod, customer, restaurant);
-
-                    order.SpecialRequest = specialRequest;
-
-                    // Parse and add food items
-                    if (!string.IsNullOrEmpty(itemsStr))
-                    {
-                        string[] items = itemsStr.Split(';');
-                        foreach (string item in items)
-                        {
-                            string[] itemParts = item.Split(':');
-                            if (itemParts.Length == 2)
-                            {
-                                string itemName = itemParts[0].Trim();
-                                int quantity = int.Parse(itemParts[1].Trim());
-
-                                FoodItem foodItem = restaurant.FindFoodItem(itemName);
-                                if (foodItem != null)
-                                {
-                                    order.AddItem(foodItem, quantity);
-                                }
-                            }
-                        }
-                    }
-
-                    // Add order to customer and restaurant
-                    customer.AddOrder(order);
-                    restaurant.AddOrder(order);
-                    count++;
-
-                    // Update next order ID
-                    if (orderID >= nextOrderID)
-                    {
-                        nextOrderID = orderID + 1;
-                    }
-                }
-            }
-        }
-
-        Console.WriteLine($"{count} orders loaded!");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Error loading orders: {ex.Message}");
-    }
-}
 
 // basic feature 2 : Anjushree
 
