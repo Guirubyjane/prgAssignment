@@ -1,76 +1,50 @@
 # prgAssignment
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-class SpecialOffer
+//==========================================================
+// Student Number : S10274330A
+// Student Name : Gui Ru
+// Partner Name : Anjushree
+//==========================================================
+
+namespace S10274330_PRG2Assignment
 {
-    private string offerCode;
-    private string offerDesc;
-    private double discount;
-
-    public string OfferCode { get; set; }
-    public string OfferDesc { get; set; }
-    public double Discount { get; set; }
-
-    public SpecialOffer() { }
-    public SpecialOffer(string oc, string od, double d ) 
+    class SpecialOffer
     {
-        offerCode = oc;
-        offerDesc = od;
-        discount = d;
-    }
+        private string offerCode;
+        private string offerDesc;
+        private double discount;
 
-    // method 
-    public double ApplyDiscount(double originalAmount)
-    {
-        if (DiscountAmount > 0)
+        public string OfferCode { get; set; }
+        public string OfferDesc { get; set; }
+        public double Discount { get; set; }
+
+        // constructor
+        public SpecialOffer() { }
+        public SpecialOffer(string oc, string od, double d ) 
         {
-            double discountValue = originalAmount * (DiscountAmount / 100);
-            return originalAmount - discountValue;
+            offerCode = oc;
+            offerDesc = od;
+            discount = d;
         }
-        return originalAmount;
-    }
 
-    public bool IsValidOffer()
-    {
-        return !string.IsNullOrEmpty(OfferCode) && !string.IsNullOrEmpty(Description);
-    }
-
-    public override string ToString()
-    {
-        if (DiscountAmount > 0)
+        // method 
+     
+        public override string ToString()
         {
-            return $"{OfferCode}: {Description} - {DiscountAmount}% off";
-        }
-        else
-        {
-            return $"{OfferCode}: {Description}";
+            if (Discount > 0)
+            {
+                return $"{OfferCode}: {OfferDesc} - {Discount}% off";
+            }
+            else
+            {
+                return $"{OfferCode}: {OfferDesc}";
+            }
         }
     }
-
-    // Display offer details
-    public void DisplayOfferDetails()
-    {
-        Console.WriteLine($"Offer Code: {OfferCode}");
-        Console.WriteLine($"Description: {Description}");
-        if (DiscountAmount > 0)
-        {
-            Console.WriteLine($"Discount: {DiscountAmount}%");
-        }
-        else
-        {
-            Console.WriteLine("Discount: N/A (Free delivery or other benefits)");
-        }
-    }
-
-    // Convert to CSV format
-    public string ToCSV()
-    {
-        string restaurantID = Restaurant != null ? Restaurant.RestaurantID : "";
-        return $"{restaurantID},{OfferCode},{Description},{DiscountAmount}";
-    }
-
-    public string ToString()
-    {
-        return "Offer Code:" + OfferCode + " Offer Desc: " + OfferDesc + " Discount: " + Discount;
-    }
-
 }
+
