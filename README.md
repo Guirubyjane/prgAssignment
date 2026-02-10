@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 // Partner Name : Anjushree
 //==========================================================
 
-
 namespace S10274330_PRG2Assignment
 {
     class Order
@@ -86,11 +85,9 @@ namespace S10274330_PRG2Assignment
 
         public void AddOrderedFoodItem(OrderedFoodItem ofi)
         {
-
             if (ofi != null)
             {
                 OrderedFoodItem.Add(ofi);
-                CalculateOrderTotal();          // Recalculate total
             }
         }
 
@@ -99,7 +96,6 @@ namespace S10274330_PRG2Assignment
             if (ofi != null && OrderedFoodItem.Contains(ofi))
             {
                 OrderedFoodItem.Remove(ofi);
-                CalculateOrderTotal(); // Recalculate total
                 return true;
             }
             return false;
@@ -120,22 +116,25 @@ namespace S10274330_PRG2Assignment
             foreach (OrderedFoodItem ofi in OrderedFoodItem)
             {
                 double itemSubtotal = ofi.CalculateSubTotal();
-                Console.WriteLine($"{itemNumber}. {ofi.OrderedFoodItem.tostring()}");
+                Console.WriteLine($"{itemNumber}. {ofi.ToString()}");
                 itemNumber++;
             }
 
             Console.WriteLine($"\nDelivery Fee: $5.00");
 
-            if (SpecialOffer != null && SpecialOffer.DiscountAmount > 0)
+            if (SpecialOffer != null && SpecialOffer.Discount > 0)
             {
-                Console.WriteLine($"Discount ({SpecialOffer.OfferCode}): -{SpecialOffer.DiscountAmount}%");
+                Console.WriteLine($"Discount ({SpecialOffer.OfferCode}): -{SpecialOffer.Discount}%");
             }
+
+            OrderTotal = CalculateOrderTotal();
 
             Console.WriteLine($"Order Total: ${OrderTotal:F2}");
         }
 
-        public string ToString()
+        public override string ToString()
         {
+            // check if customer and customer name is null, then put as unknown customer
             string customerName = Customer?.CustomerName ?? "Unknown Customer";
             string restaurantName = Restaurant?.RestaurantName ?? "Unknown Restaurant";
 
