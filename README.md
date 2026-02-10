@@ -171,7 +171,7 @@ void LoadFoodItems()
         }
     }
 
-Restaurant FindRestaurant(string id)
+static Restaurant FindRestaurant(string id)
 {
     foreach (Restaurant r in RestaurantList)
     {
