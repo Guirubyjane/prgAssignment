@@ -34,7 +34,8 @@ string ordersFilePath = "orders - Copy.csv";
 
 
 Console.WriteLine("Welcome to the Gruberoo Food Delivery System");
-LoadAllRestaurantsAndMenuItems();
+LoadRestaurants
+LoadMenuItems();
 LoadCustomers("customers.csv");
 LoadOrders("orders - Copy.csv");
 
@@ -46,7 +47,7 @@ while (true)
 
 
     if (option == 1) ListAllRestaurantsAndMenuItems();
-    else if (option == 2) ListAllCustomerAndOrders();
+    else if (option == 2) ListAllOrders();
     else if (option == 3) CreateNewOrder();
     else if (option == 4) ProcessOrder();
     else if (option == 5) ModifyExistingOrder();
@@ -319,7 +320,7 @@ void LoadOrders(string path)
 
 
         // Basic Feature 4: Gui Ru 
-   void listallorders()
+   void ListAllOrders()
 {
     Console.WriteLine("\nAll Orders");
     Console.WriteLine("==========");
