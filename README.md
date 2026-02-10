@@ -183,7 +183,7 @@ Restaurant FindRestaurant(string id)
     return null; // Failure: ID doesn't exist in our list
 }
 
-// Basic Feature 2: Anjushree
+// Basic Feature 2 : Anjushree
 void LoadCustomers(string path)
         {
             customers.Clear();
@@ -280,7 +280,7 @@ void LoadOrders(string path)
                 // Order(int oi, DateTime odt, double ot, string os, DateTime ddt, string da, string opm, bool op)
                 Order o = new Order(orderId, orderDT, total, status, deliveryDT, address, payMethod, paid);
 
-                
+                // ✅ Feature 2 required links:
                 customerByEmail[custEmail].AddOrder(o);
                 restaurantById[restId].Orders.Enqueue(o);
 
@@ -317,6 +317,7 @@ void LoadOrders(string path)
                 Console.WriteLine();
             }
         }
+
 
 
         // Basic Feature 4: Gui Ru 
