@@ -15,7 +15,7 @@ namespace S10272786F_PRG2Assignment
 
         public OrderedFoodItem(string itemName, string itemDesc, double itemPrice, string customise, int qtyOrdered) : base(itemName, itemDesc, itemPrice, customise)
         {
-            qtyOrdered = QtyOrdered;
+            QtyOrdered = qtyOrdered;
             subTotal = CalculateSubTotal();
         }
         public double CalculateSubTotal()
